@@ -1,19 +1,25 @@
-const JWT=require('jsonwebtoken');
-const User=require('../models/user');
-const {JWT_SECRET, EMAIL_USER, EMAIL_PASSWORD}=require('../configs/config');
+const User = require('../models/user');
+const VerificationToken = require('../models/verificationtoken');
+const {
+    JWT_SECRET,
+    EMAIL_USER,
+    EMAIL_PASSWORD
+} = require('../configs/config');
+const JWT = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
+const crypto = require('crypto')
 const nodemailer = require('nodemailer');
 
-signToken=(user)=>{
+signToken = (user) => {
     return JWT.sign({
         iss: 'ashwani',
         sub: user.id, //here id and _id both are same(mongodb generated id)
         iat: new Date().getTime(), //current time
-        exp: new Date().setDate(new Date().getDate()+30) //current time +30 day ahead
-    },JWT_SECRET)
+        exp: new Date().setDate(new Date().getDate() + 30) //current time +30 day ahead
+    }, JWT_SECRET)
 }
 
-sendMail = async (email, code) => {
+sendMail = async (email, token, host) => {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -25,7 +31,7 @@ sendMail = async (email, code) => {
         from: EMAIL_USER,
         to: email,
         subject: 'Celesta, Activate your account',
-        text: `Your activation OTP is ${code}`
+        text: 'Hello,\n\n' + 'Please verify your account by clicking the link: \nhttps:\/\/' + host + '\/users\/verify\/' + token + '\n'
     };
     try {
         await transporter.sendMail(mailOptions);
@@ -57,100 +63,101 @@ sendPwdResetMail = async (email, code) => {
     }
 }
 
-module.exports={
+module.exports = {
 
     //signup api (access: all)
-    signUp: async(req,res,next)=>{
-        const {email,password,name}=req.value.body;
+    signUp: async (req, res, next) => {
+        const rawUser = req.value.body;
 
-        req.value.body.instituteId = req.value.body.instituteId.trim();
-
-        const foundUser=await User.findOne({email: email})
-        if(foundUser){
-            return res.status(403).json({message: "Email is already registered"});
+        const foundUser = await User.findOne({
+            email: rawUser.email
+        })
+        if (foundUser) {
+            return res.status(403).send({
+                message: "Email is already registered with us."
+            });
         }
-        
-        //initially setting isSuperUserProperty to false(this can be set true from database only)
-        req.value.body.isSuperUser=false;
 
-        //initially setting por to empty array (this can be set by admin only)
-        req.value.body.por=[];
+        const newUser = new User(req.value.body);
+        await newUser.save();
 
-        let code = Math.floor(100000 + Math.random() * 900000);
-        req.value.body.code=code;
-        let mailresponse = await sendMail(email, code);
-        if(mailresponse === true) {
+        var newToken = new VerificationToken({
+            userId: newUser._id,
+        });
+        await newToken.save();
 
-            //create a new user
-            const newUser=new User(req.value.body);
-            await newUser.save();
-            const token=signToken(newUser);
-            res.status(200).json({
-                token: token,
-                user: newUser
-            })
+        let mailresponse = await sendMail(newUser.email, newToken._id, req.headers.host);
+
+        if (mailresponse === true) {            
+            res.status(200).send(newUser)
         } else {
-            res.status(500).json({
-                message: "Could not register your account"
-            })
+            res.status(500).send({message: "Mail send failed!"})
         }
 
     },
 
     //signin api (access: all)
-    signIn: async(req,res,next)=>{
+    signIn: async (req, res, next) => {
         //generate token
-        const user=req.user;
-        const token=signToken(user);
+        const user = req.user;
+        const token = signToken(user);
 
-        res.status(200).json({
+        res.status(200).send({
             token: token,
             user: user
         });
     },
 
-    activateUser: async(req,res,next)=>{
-        const { email, code } = req.body;
-        const user = await User.findOne({email: email});
-        if (user) {
-            if (user.active === 1) {
-                res.status(408).json({
-                    "message": "User already activated"
-                 });
+    activateUser: async (req, res, next) => {
+        
+        const foundToken = await VerificationToken.findById(req.params.token)
+
+        if (foundToken) {
+
+            const foundUser = await User.findById(foundToken.userId);
+
+            if (foundUser) {
+
+                if (foundUser.isVerified) return res.status(400).send({ message: 'This user has already been verified.' });
+
+                User.findByIdAndUpdate(foundUser._id, {isVerified: true}, {new: true}).then((updatedUser) => {
+                    res.status(200).send("The account has been verified. Please log in.");
+                });
+
+
+                // await foundUser.save();
+                // res.status(200).send("The account has been verified. Please log in.");
+
             } else {
-                if (user.code === code) {
-                    User.findByIdAndUpdate({_id: user._id},{active: 1, code: null},{new:true}).then((updatedUser)=>{
-                        const token=signToken(updatedUser);
-                        res.status(200).json({
-                            token: token,
-                            user: updatedUser
-                        });
-                    });
-                } else {
-                    res.status(409).json({
-                        "message": "Invalid activation code"
-                     });
-                }
+                return res.status(400).send({ message: 'We were unable to find a user for this token.' });
             }
+
         } else {
-            res.status(404).json({
-                "message": "User not registered"
-             });
+            return res.status(400).send({ message: 'We were unable to find a valid token. Your token my have expired.' });
         }
+
     },
 
-    forgotPwd: async(req,res,next)=>{
-        const { email } = req.body;
-        const user = await User.findOne({email});
+    forgotPwd: async (req, res, next) => {
+        const {
+            email
+        } = req.body;
+        const user = await User.findOne({
+            email
+        });
         if (user) {
             let code = Math.floor(100000 + Math.random() * 900000);
-            if(user.active === 0) {
+            if (user.active === 0) {
                 code = user.code;
             }
             let mailresponse = await sendPwdResetMail(email, code);
-            if(mailresponse === true) {
+            if (mailresponse === true) {
                 // update user code
-                await User.findByIdAndUpdate({_id: user._id},{code: code});
+                await User.findByIdAndUpdate({
+                    _id: user._id
+                }, {
+                    code: code
+                });
                 res.status(200).json({
                     message: "Password reset code is sent to your webmail account"
                 })
@@ -162,12 +169,17 @@ module.exports={
         } else {
             res.status(404).json({
                 "message": "No user found for this webmail"
-             });
+            });
         }
     },
 
-    resetPwd: async(req,res,next)=>{
-        let { email, code, password, confirmPassword } = req.body;
+    resetPwd: async (req, res, next) => {
+        let {
+            email,
+            code,
+            password,
+            confirmPassword
+        } = req.body;
 
         if (code == 0) {
             return res.status(407).json({
@@ -175,33 +187,42 @@ module.exports={
             });
         }
 
-        const user = await User.findOne({email});
-        if(user) {
-            if(user.code !== code) {
+        const user = await User.findOne({
+            email
+        });
+        if (user) {
+            if (user.code !== code) {
                 return res.status(401).json({
                     "message": "Incorrect reset password code"
                 });
             }
-            if(password !== confirmPassword){
+            if (password !== confirmPassword) {
                 return res.status(403).json({
                     "message": "Passwords do not match"
                 });
             }
-            let pwd=password;
+            let pwd = password;
             const salt = await bcrypt.genSalt(10);
             const passwordHash = await bcrypt.hash(pwd, salt);
             password = passwordHash;
 
-            User.findByIdAndUpdate({_id: user._id},{password, code: 0},{new:true}).then((updatedUser)=>{
+            User.findByIdAndUpdate({
+                _id: user._id
+            }, {
+                password,
+                code: 0
+            }, {
+                new: true
+            }).then((updatedUser) => {
                 res.status(200).json({
                     "message": "Password reset successful. You can now login with your new password"
                 });
             });
-            
+
         } else {
             res.status(404).json({
                 "message": "No user found for this webmail"
-             });
+            });
         }
     },
 
@@ -219,99 +240,21 @@ module.exports={
     //     }
     // },
 
-    
+
     //get particular user api (access: auth users)
-    getUser: async(req,res,next)=>{
+    getUser: async (req, res, next) => {
         const userId = req.params.userId;
 
-        const user=await User.findOne({_id: userId}).populate('pors');
-        if(user){
-            res.status(200).json({
-                user: user
-            })
+        const user = await User.findOne({
+            _id: userId
+        })
+        if (user) {
+            res.status(200).send(user)
         } else {
-            res.status(404).json({
-                message: "User not found"   
+            res.status(404).send({
+                message: "User not found"
             })
         }
     },
-
-    //patch particular user api (access: same user && superUser)
-    patchUser: async(req,res,next)=>{
-        const userId = req.params.userId;
-
-        if (userId==req.user.id && !req.user.isSuperUser) {
-            if(req.value.body.password!=undefined) {
-                const pwd=req.value.body.password;
-                const salt = await bcrypt.genSalt(10);
-                const passwordHash = await bcrypt.hash(pwd, salt);
-                req.value.body.password = passwordHash;
-            }
-            
-            //setting isSuperUser value to false if user is not admin
-            if(!req.user.isSuperUser) {
-                req.value.body.isSuperUser=false;
-            }
-            req.value.body.isSuperUser=false;
-
-            const user=await User.findOne({_id: userId});
-            if(user){
-                //restricting user to add pors if he/she is not superUser while updating his profile
-                if(user.por.length==0) {
-                    req.value.body.por=[];
-                }
-                User.findByIdAndUpdate({_id: userId},req.value.body,{new:true}).then((updatedUser)=>{
-                    res.status(200).json({
-                        user: updatedUser
-                    });
-                });
-            } else {
-                res.status(404).json({
-                    message: "User not found"
-                })
-            }
-        } else if(userId!=req.user.id && req.user.isSuperUser) {
-            var updateData={};
-            if(req.value.body.por!=undefined) {
-                updateData.por=req.value.body.por;
-            }
-            if(req.value.body.isSuperUser!=undefined) {
-                updateData.isSuperUser=req.value.body.isSuperUser;
-            }
-
-            const user=await User.findOne({_id: userId});
-            if(user){
-                User.findByIdAndUpdate({_id: userId}, updateData, {new:true}).then((updatedUser)=>{
-                    res.status(200).json({
-                        user: updatedUser
-                    });
-                });
-            } else {
-                res.status(404).json({
-                    message: "User not found"
-                })
-            }
-        } else if(userId==req.user.id && req.user.isSuperUser) {
-            const user=await User.findOne({_id: userId});
-            if(user){
-                User.findByIdAndUpdate({_id: userId}, req.value.body, {new:true}).then((updatedUser)=>{
-                    res.status(200).json({
-                        user: updatedUser
-                    });
-                });
-            } else {
-                res.status(404).json({
-                    message: "User not found"
-                })
-            }
-        } else {
-            res.status(401).json({
-                message: "Unauthorized request"
-            })
-        }
-
-        
-    },
-    
 
 }
