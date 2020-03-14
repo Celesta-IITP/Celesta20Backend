@@ -1,152 +1,302 @@
-const Event=require('../models/event');
-const Club=require('../models/club');
-const Por=require('../models/por');
+const Event = require('../models/event');
+const User = require('../models/user');
+const Registration = require('../models/registration');
 
-module.exports={
+module.exports = {
 
-    //get all events api (access: auth users)
-    getAllEvents: async(req,res,next)=>{
-        const events=await Event.find({}).populate('relatedClub','name bio image').sort({_id:-1});
-        if(events){
-            res.status(200).json({
-                events: events
-            })
+    getAllEvents: async (req, res, next) => {
+        const events = await Event.find({}, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
+        if (events) {
+            res.status(200).send(events)
         } else {
-            res.status(404).json({
-                message: "No events found"
-            })
+            res.status(404).send("No events found");
         }
     },
 
-    //get all events of a club api (access: auth users)
-    getClubEvents: async(req,res,next)=>{
-        const clubId = req.params.clubId;
-        const events=await Event.find({relatedClub: clubId}).populate('relatedClub','name bio image').sort({_id:-1});
-        if(events){
-            res.status(200).json({
-                events: events
-            })
+    getEventsByType: async (req, res, next) => {
+        const type = req.params.type;
+        const events = await Event.find({
+            eventType: type
+        }, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
+        if (events) {
+            res.status(200).send(events)
         } else {
-            res.status(404).json({
-                message: "No events found"
-            })
+            res.status(404).send("No events found");
+        }
+    },
+
+    getAllDetailedEvents: async (req, res, next) => {
+        const events = await Event.find({}, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
+        if (events) {
+            res.status(200).send(events)
+        } else {
+            res.status(404).send("No events found");
+        }
+    },
+
+    getDetailedEventsByType: async (req, res, next) => {
+        const type = req.params.type;
+        const events = await Event.find({
+            eventType: type
+        }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
+        if (events) {
+            res.status(200).send(events)
+        } else {
+            res.status(404).send("No events found");
         }
     },
 
     //get events by date api (access: auth users)
-    getEventsByDate: async(req,res,next)=>{
-        const query=parseInt(req.params.timestamp);
-        const greaterThan = query - 60*24*60*60*1000;
-        const lessThan = query + 60*24*60*60*1000;
+    getEventsByDate: async (req, res, next) => {
+        const query = req.params.date;
 
-        const events=await Event.find({date: {$gt: greaterThan, $lt: lessThan}}).populate('relatedClub','name bio image').sort({_id:-1});
-        if(events){
-            res.status(200).json({
-                events: events
-            })
+        const events = await Event.find({
+            date: query
+        }, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
+
+        if (events) {
+            res.status(200).send(events)
         } else {
-            res.status(404).json({
-                message: "No events found"
-            })
+            res.status(404).send("No events found");
         }
     },
 
-    //post a event api (access: auth users)
-    postEvent: async(req,res,next)=>{
+    getDetailedEventsByDate: async (req, res, next) => {
+        const query = req.params.date;
 
-        const currUser = req.user;
-        const clubId = req.value.body.relatedClub;
-        const currPor = await Por.findOne({club:clubId, user: currUser._id});
+        const events = await Event.find({
+            date: query
+        }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
 
-        if (currPor && currPor.access > 0) {
-
-            const club=await Club.findById(clubId);
-            if (club) {
-                const event=new Event(req.value.body);
-                await event.save();
-                club.events.push(event);
-                await club.save();
-                res.status(200).json({
-                    events: event
-                })
-            } else {
-                res.status(404).json({
-                    message: "Club not found!"
-                })
-            }
-
+        if (events) {
+            res.status(200).send(events)
         } else {
-            res.status(401).json({
-                message: "Unauthorized user!"
-            })
+            res.status(404).send("No events found");
         }
-
-        
     },
 
-    //get event with eventId api (access: auth users)
-    getEventWithEventId: async(req,res,next)=>{
-        const eventId=req.params.eventId;
-        const event=await Event.findOne({_id: eventId}).populate('relatedClub','name bio image');
-        if(event){
+    getEventById: async (req, res, next) => {
+        const eventId = req.params.eventId;
+        const event = await Event.findOne({
+            _id: eventId
+        }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
+
+        if (event) {
             res.status(200).send(event);
         } else {
             res.status(404).send("No event found");
         }
-        
+    },
+
+    registerInEvent: async (req, res, next) => {
+        const eventId = req.params.eventId;
+        const currUser = req.value.user;
+
+        const event = await Event.findOne({
+            _id: eventId
+        }, 'name eventType teamSize charge');
+
+        if (event) {
+
+            const existReg = await Registration.findOne({
+                userId: currUser._id,
+                eventId: eventId
+            })
+
+            if (existReg) {
+                return res.status(409).send("Already registered");
+            }
+
+            if (event.teamSize == 1) {
+                let newReg = new Registration({
+                    userId: currUser._id,
+                    eventId: eventId,
+                    orderId: eventId + Date.now()
+                })
+
+                newReg.save((err, product) => {
+                    if (err) {
+                        return res.status(500).send("Registration failed");
+                    } else {
+                        res.status(200).send("Registration successful")
+                    }
+                })
+
+            } else {
+                let newReg = new Registration({
+                    userId: currUser._id,
+                    eventId: eventId,
+                    orderId: eventId + Date.now(),
+                    teamName: req.body.teamName,
+                    teamDetails: []
+                })
+
+                req.body.teamDetails.forEach(element => {
+                    User.findOne({
+                        celestaId: element
+                    }, 'name', (err, doc) => {
+                        if (err) {
+                            return res.status(404).send("One of celesta id is invalid!");
+                        } else {
+                            newReg.teamDetails.push(doc._id)
+                        }
+                    })
+                });
+
+                newReg.save((err, product) => {
+                    if (err) {
+                        return res.status(500).send("Registration failed");
+                    } else {
+                        res.status(200).send("Registration successful")
+                    }
+                })
+            }
+
+
+        } else {
+            res.status(404).send("No event found");
+        }
+    },
+
+    completePayment: async (req, res, next) => {
+        const currUser = req.value.user;
+        const eventId = req.params.eventId;
+        const event = await Event.findOne({
+            _id: eventId
+        }, 'name eventType teamSize charge');
+
+        if (event) {
+            const existReg = await Registration.findOne({
+                userId: currUser._id,
+                eventId: eventId
+            })
+
+            if (existReg) {
+                existReg.paymentId = String(req.body.paymentId);
+                await existReg.save();
+                return res.status(200).send("Payment confirmation successful");
+            } else {
+                return res.status(404).send("Not registered in event!");
+            }
+        } else {
+            res.status(404).send("No event found");
+        }
+    },
+
+
+    //admin
+
+    postEvent: async (req, res, next) => {
+        const currUser = req.value.user;
+
+        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+
+            const newEvent = new Event(req.value.body);
+            newEvent.addedBy = currUser._id;
+
+            newEvent.save((err, product) => {
+                if (err) {
+                    res.status(500).send("Unable to add event");
+                } else {
+                    res.status(200).send("Event added")
+                }
+            });
+
+        } else {
+            res.status(403).send("Not authorized to add events");
+        }
     },
 
     //delete event using eventId api (access: eventPoster, superUser)
-    deleteEventWithEventId: async(req,res,next)=>{
-        const eventId=req.params.eventId;
-        userId=req.user.id;
-        const event=await Event.findOne({_id: eventId})
-        if(event){
-            if(event.poster==userId || req.user.isSuperUser==true) {
-                const club=await Club.findById(event.relatedClub);
-                club.events.pull(eventId);
-                club.save();
-                await Event.findByIdAndRemove({_id: eventId});
-                res.status(200).json({
-                    message: "Event deleted"
-                });
+    deleteEventWithEventId: async (req, res, next) => {
+        const eventId = req.params.eventId;
+        const currUser = req.value.user;
+
+        const event = await Event.findOne({
+            _id: eventId
+        });
+
+        if (event) {
+            if (event.addedBy == currUser._id || currUser.roles.includes('admin')) {
+                Event.findByIdAndRemove({
+                    _id: eventId
+                }, (err, doc) => {
+                    if (err) {
+                        res.status(500).send("Unable to delete event");
+                    } else {
+                        res.status(200).send("Event deleted.")
+                    }
+                })
             } else {
-                res.status(401).json({
-                    message: "Unauthorized delete request"
-                });
+                res.status(403).send("Not authorized")
             }
         } else {
-            res.status(404).json({
-                message: "No event found"
-            })
+            res.status(404).send("Event not found!")
+        }
+    },
+
+    patchEventWithId: async (req, res, next) => {
+        const eventId = req.params.eventId;
+        const currUser = req.value.user;
+
+        const event = await Event.findOne({
+            _id: eventId
+        });
+
+        if (event) {
+            if (event.addedBy == currUser._id || currUser.roles.includes('admin')) {
+                Event.findByIdAndUpdate({
+                    _id: eventId
+                }, req.value.body, {
+                    new: true
+                }, (err, doc) => {
+                    if (err) {
+                        res.status(500).send("Unable to update event");
+                    } else {
+                        res.status(200).send("Event updated.")
+                    }
+                })
+            } else {
+                res.status(403).send("Not authorized")
+            }
+        } else {
+            res.status(404).send("Event not found!")
         }
 
     },
 
-    //update(patch) event with eventId api (access: eventPoster, superUer)
-    patchEventWithEventId: async(req,res,next)=>{
-        const eventId=req.params.eventId;
-        const userId=req.user.id;
+    getRegistrationsByEvent: async (req, res, next) => {
+        const eventId = req.params.eventId;
+        const currUser = req.value.user;
 
-        const event=await Event.findOne({_id: eventId})
-        if(event){
-            if(event.poster==userId || req.user.isSuperUser==true) {
-                Event.findByIdAndUpdate({_id: eventId},req.value.body,{new:true}).then((event)=>{
-                    res.status(200).json({
-                        event: event
-                    });
-                });
-            } else {
-                res.status(401).json({
-                    message: "Unauthorized update request" 
-                });
-            }
+        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+            
+            const regs = await Registration.find({
+                eventId: eventId
+            });
+
+            res.status(200).send(regs)
+
         } else {
-            res.status(404).json({
-                message: "No event found"
-            })
+            res.status(403).send("Not authorized")
         }
-        
     },
-    
+
+    getRegistrationsByUser: async (req, res, next) => {
+        const userId = req.params.userId;
+        const currUser = req.value.user;
+
+        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+            
+            const regs = await Registration.find({
+                userId: userId
+            });
+
+            res.status(200).send(regs)
+
+        } else {
+            res.status(403).send("Not authorized")
+        }
+    },
+
 }

@@ -33,7 +33,6 @@ const eventSchema = new Schema({
     },
     venueUrl: {
         type: String,
-        required: true
     },
     date: {
         type: String, 
@@ -49,6 +48,10 @@ const eventSchema = new Schema({
         type: Number,
         default: 1
     },
+    eventType: {
+        type: Number,
+        default: 0
+    },
 
     rulebookUrl: {
         type: String
@@ -56,7 +59,7 @@ const eventSchema = new Schema({
     registrationUrl: {
         type: String
     },
-    registrationCharge: {
+    charge: {
         type: Number,
         default: 0
     },
@@ -64,23 +67,6 @@ const eventSchema = new Schema({
     postLinks : [{
         type : String
     }],
-
-    registrations: [{
-        userId: {
-            type: Schema.Types.ObjectId,
-            ref: 'user',
-            required: true
-        },
-        orderId: {
-            type: String
-        },
-        paymentId: {    //or transactionId
-            type: String
-        },
-
-    }]
-
-    
 });
 
 

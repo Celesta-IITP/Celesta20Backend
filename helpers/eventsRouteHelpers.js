@@ -4,10 +4,9 @@ module.exports={
 
     validateBody: (schema)=>{
         return (req,res,next)=>{
-            req.body.eventId=new Date().getTime();
             const result=Joi.validate(req.body,schema);
             if(result.error){
-                return res.status(400).json(result.error)
+                return res.status(400).send(result.error)
             }
             if(!req.value){
                 req.value={}
@@ -20,14 +19,21 @@ module.exports={
     //valiadtion schemas
     schemas: {
         eventSchema: Joi.object().keys({
-            venue: Joi.string(),
-            name: Joi.string(),
+            organizers: Joi.array(),
+            name: Joi.string().required(),
             description: Joi.string(),
-            eventId: Joi.number(),
             imageUrl: Joi.string(),
-            coordinators: Joi.array(),
-            postLinks: Joi.array(),
-            date: Joi.number()
-        }).unknown(true)
+            venue: Joi.string(),
+            venueUrl: Joi.string(),
+            date: Joi.string(),
+            startTime: Joi.string(),
+            endTime: Joi.string(),
+            teamSize: Joi.number(),
+            eventType: Joi.number(),
+            rulebookUrl: Joi.string(),
+            charge: Joi.number(),
+            postLinks: Joi.array()
+        }).unknown(false),
+
     }
 }
