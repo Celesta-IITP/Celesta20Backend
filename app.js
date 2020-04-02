@@ -62,7 +62,7 @@ app.use((err,req,res,next)=>{
 })
 
 //Start the server
-var port = process.env.PORT || 5000;
+var port = process.env.PORT || 3000;
 server.listen(port, function() {
   console.log("App is running on port " + port);
 });
