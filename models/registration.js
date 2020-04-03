@@ -9,7 +9,7 @@ const regSchema = new Schema({
     },
     eventId: {
         type: Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'event',
         required: true
     },
     orderId: {

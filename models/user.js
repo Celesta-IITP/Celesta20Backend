@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const Schema = mongoose.Schema;
 
+const USER_ROLES_ENUM = {
+  USER: 'USER',
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  ORGANIZER: 'ORGANIZER',
+  COORD: 'COORD',
+  SUBCOORD: 'SUBCOORD',
+  COMMETTEE: 'COMMETTEE'
+}
+
 const userSchema = new Schema({
   email: {
     type: String,
@@ -13,39 +23,37 @@ const userSchema = new Schema({
     type: String,
     required: false
   },
-
   name: {
     type: String,
     required: true
   },
   phone: {
-    type: String
+    type: String,
+    required: true
   },
   college: {
     type: String,
-    default: "IIT Patna"
+    required: true
+  },
+  sex: {
+    type: Number,     //0: default, 1: male, 2: female 3:other
+    default: 0
+  },
+  roles: {
+    type: Array,
+    default: [ USER_ROLES_ENUM.USER ]
   },
   referralId: {
     type: String,
     default: "CLSTADMN"
   },
-  sex: {
-    type: Number,     //0: default, 1: male, 2: female
-    default: 0
-  },
-
   celestaId: {
     type: String
-  },
-
-  roles: [{
-    type: String
-  }],
-  
+  },  
   isVerified: {
     type: Boolean,
     default: false
-  }
+  },
 });
 
 //we couldn't use the arrow function because we want to use this.email
@@ -77,3 +85,4 @@ userSchema.methods.isValidPassword = async function (newPassword) {
 
 const User = mongoose.model("user", userSchema);
 module.exports = User;
+module.exports = USER_ROLES_ENUM;

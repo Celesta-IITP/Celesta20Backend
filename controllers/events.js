@@ -1,6 +1,7 @@
 const Event = require('../models/event');
 const User = require('../models/user');
 const Registration = require('../models/registration');
+const USER_ROLES_ENUM = require('../models/user');
 
 module.exports = {
 
@@ -189,7 +190,7 @@ module.exports = {
     postEvent: async (req, res, next) => {
         const currUser = req.value.user;
 
-        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+        if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
 
             const newEvent = new Event(req.value.body);
             newEvent.addedBy = currUser._id;
@@ -217,7 +218,7 @@ module.exports = {
         });
 
         if (event) {
-            if (event.addedBy == currUser._id || currUser.roles.includes('admin')) {
+            if (event.addedBy == currUser._id || currUser.roles.includes(USER_ROLES_ENUM.ADMIN)) {
                 Event.findByIdAndRemove({
                     _id: eventId
                 }, (err, doc) => {
@@ -244,7 +245,7 @@ module.exports = {
         });
 
         if (event) {
-            if (event.addedBy == currUser._id || currUser.roles.includes('admin')) {
+            if (event.addedBy == currUser._id || currUser.roles.includes(USER_ROLES_ENUM.ADMIN)) {
                 Event.findByIdAndUpdate({
                     _id: eventId
                 }, req.value.body, {
@@ -269,7 +270,7 @@ module.exports = {
         const eventId = req.params.eventId;
         const currUser = req.value.user;
 
-        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+        if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
             
             const regs = await Registration.find({
                 eventId: eventId
@@ -286,7 +287,7 @@ module.exports = {
         const userId = req.params.userId;
         const currUser = req.value.user;
 
-        if (currUser.roles.includes('organizer') || currUser.roles.includes('admin') || currUser.roles.includes('subcoord') || currUser.roles.includes('coord')) {
+        if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
             
             const regs = await Registration.find({
                 userId: userId
