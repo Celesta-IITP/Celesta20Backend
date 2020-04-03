@@ -1,4 +1,4 @@
-const User = require('../models/user');
+const { User, USER_ROLES_ENUM } = require('../models/user');
 const VerificationToken = require('../models/verificationtoken');
 const {
     JWT_SECRET,
@@ -37,6 +37,7 @@ sendMail = async (email, token, host) => {
         await transporter.sendMail(mailOptions);
         return true;
     } catch (error) {
+        console.log(error);
         return false;
     }
 }
@@ -63,6 +64,19 @@ sendPwdResetMail = async (email, code) => {
     }
 }
 
+generateCelestaId = async () => {
+    var minm = 1000;
+    var maxm = 9999;
+    while(true) {
+        const randomNumber = Math.floor(Math.random() * (maxm - minm + 1)) + minm;
+        const celestaId = 'CLST' + randomNumber;
+        const user = await User.findOne({celestaId});
+        if( !user ) {
+            return celestaId;
+        }
+    }
+}
+
 module.exports = {
 
     //signup api (access: all)
@@ -79,17 +93,19 @@ module.exports = {
         }
 
         const newUser = new User(req.value.body);
-        await newUser.save();
-
+        
         var newToken = new VerificationToken({
             userId: newUser._id,
         });
-        await newToken.save();
 
         let mailresponse = await sendMail(newUser.email, newToken._id, req.headers.host);
 
-        if (mailresponse === true) {            
-            res.status(200).send(newUser)
+        if (mailresponse === true) {
+            const celestaId = await generateCelestaId();
+            newUser.celestaId = celestaId;
+            await newUser.save();
+            await newToken.save();
+            res.status(200).send({user: newUser});
         } else {
             res.status(500).send({message: "Mail send failed!"})
         }

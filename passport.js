@@ -8,7 +8,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const {
     JWT_SECRET
 } = require('./configs/config');
-const User = require('./models/user')
+const { User } = require('./models/user')
 
 //JSON WEB TOKENS STRATEGY
 passport.use(new JwtStrategy({

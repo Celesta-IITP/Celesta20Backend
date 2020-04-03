@@ -1,7 +1,6 @@
 const Event = require('../models/event');
-const User = require('../models/user');
+const { User, USER_ROLES_ENUM } = require('../models/user');
 const Registration = require('../models/registration');
-const USER_ROLES_ENUM = require('../models/user');
 
 module.exports = {
 

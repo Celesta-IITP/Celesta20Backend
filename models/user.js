@@ -21,7 +21,7 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-    required: false
+    required: false,
   },
   name: {
     type: String,
@@ -37,7 +37,7 @@ const userSchema = new Schema({
   },
   sex: {
     type: Number,     //0: default, 1: male, 2: female 3:other
-    default: 0
+    required: true
   },
   roles: {
     type: Array,
@@ -84,5 +84,7 @@ userSchema.methods.isValidPassword = async function (newPassword) {
 }
 
 const User = mongoose.model("user", userSchema);
-module.exports = User;
-module.exports = USER_ROLES_ENUM;
+module.exports = {
+  User,
+  USER_ROLES_ENUM
+}
