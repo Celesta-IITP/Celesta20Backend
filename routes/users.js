@@ -9,7 +9,7 @@ const passportConf=require('../passport');
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, './profilephotos/');
+        cb(null, './public/profilephotos/');
     },
     filename: (req, file, cb) => {
         cb(null, new Date().toISOString() + file.originalname);
@@ -41,9 +41,9 @@ router.route('/signin')
 router.route('/:userId')
     .get(passport.authenticate('jwt',{session: false}), UsersControllers.getUser)
 
-//localhost:PORT/users/profileimage
-router.route('/profileimage')
-    .post(upload.single('profileimage'), passport.authenticate('jwt',{session: false}), UsersControllers.uploadUserProfileImage)
+//localhost:PORT/users/profilephoto
+router.route('/profilephoto')
+    .post(upload.single('profilephoto'), passport.authenticate('jwt',{session: false}), UsersControllers.uploadUserProfileImage)
 
 //localhost:PORT/users/verify
 router.route('/verify/:token')

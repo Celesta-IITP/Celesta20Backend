@@ -34,7 +34,7 @@ mongoose.Promise = global.Promise;
 //Middlewares
 app.use(cors());
 app.use(morgan('dev'));
-app.use('/profilephotos', express.static(__dirname + '/profilephotos'));
+app.use('/public/profilephotos', express.static(__dirname + '/public/profilephotos'));
 app.use(bodyParser.json());
 
 //Routes
