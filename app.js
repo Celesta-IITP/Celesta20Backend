@@ -3,6 +3,7 @@ const morgan=require('morgan');
 const bodyParser=require('body-parser');
 const mongoose=require('mongoose');
 const cors=require('cors');
+const path=require('path');
 
 const users=require('./routes/users');
 const feeds=require('./routes/feeds');
@@ -10,6 +11,7 @@ const events=require('./routes/events');
 const clubs=require('./routes/clubs');
 const pors=require('./routes/pors');
 const admin=require('./routes/admin');
+
 const {DB_URI}=require('./configs/config');
 
 const app=express();
@@ -32,6 +34,7 @@ mongoose.Promise = global.Promise;
 //Middlewares
 app.use(cors());
 app.use(morgan('dev'));
+app.use('/profilephotos', express.static(__dirname + '/profilephotos'));
 app.use(bodyParser.json());
 
 //Routes

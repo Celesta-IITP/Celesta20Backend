@@ -273,4 +273,23 @@ module.exports = {
         }
     },
 
+    uploadUserProfileImage: async (req, res, next) => {
+        const userId = req.user.id;
+        console.log(req.file);
+        const user = await User.findOne({
+            _id: userId
+        })
+        if (user) {
+            User.findByIdAndUpdate({_id: userId}, {profilePhoto: req.file.path} ,{new:true}).then((updatedUser)=>{
+                res.status(200).json({
+                    updatedUser
+                });
+            });
+        } else {
+            res.status(404).send({
+                message: "User not found"
+            })
+        }
+    },
+
 }
