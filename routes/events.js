@@ -4,21 +4,21 @@ const {validateBody, schemas}=require('../helpers/eventsRouteHelpers');
 const passport=require('passport');
 const passportConf=require('../passport');
 
-//localhost:3000/events
+//localhost:PORT/events
 // router.route('/')
 //     .get(EventsControllers.getAllEvents)
 //     .post(passport.authenticate('jwt',{session: false}), validateBody(schemas.eventSchema), EventsControllers.postEvent)
 
 
-// //localhost:3000/events/club/:clubId
+// //localhost:PORT/events/club/:clubId
 // router.route('/club/:clubId')
 //     .get(EventsControllers.getClubEvents)
 
-// //localhost:3000/events/date/:timestmp
+// //localhost:PORT/events/date/:timestmp
 // router.route('/date/:timestamp')
 //     .get(EventsControllers.getEventsByDate)
 
-// //localhost:3000/events/:eventId
+// //localhost:PORT/events/:eventId
 // router.route('/:eventId')
 //     .get(EventsControllers.getEventWithEventId)
 //     .delete(passport.authenticate('jwt',{session: false}), EventsControllers.deleteEventWithEventId)

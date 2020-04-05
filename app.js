@@ -6,10 +6,7 @@ const cors=require('cors');
 const path=require('path');
 
 const users=require('./routes/users');
-const feeds=require('./routes/feeds');
 const events=require('./routes/events');
-const clubs=require('./routes/clubs');
-const pors=require('./routes/pors');
 const admin=require('./routes/admin');
 
 const {DB_URI}=require('./configs/config');
@@ -39,10 +36,7 @@ app.use(bodyParser.json());
 
 //Routes
 app.use('/users',users);
-app.use('/feeds',feeds);
 app.use('/events',events);
-app.use('/clubs',clubs);
-app.use('/pors',pors);
 app.use('/admin',admin);
 
 //Catch 404 errors and forward them to error handelers
