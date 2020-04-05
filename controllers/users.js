@@ -280,7 +280,7 @@ module.exports = {
             _id: userId
         })
         if (user) {
-            User.findByIdAndUpdate({_id: userId}, {profilePhoto: req.file.path} ,{new:true}).then((updatedUser)=>{
+            User.findByIdAndUpdate({_id: userId}, {profilePhoto: `${ req.headers.host }/${ req.file.path }`} ,{new:true}).then((updatedUser)=>{
                 res.status(200).json({
                     updatedUser
                 });
