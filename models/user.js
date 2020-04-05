@@ -9,7 +9,7 @@ const USER_ROLES_ENUM = {
   ORGANIZER: 'ORGANIZER',
   COORD: 'COORD',
   SUBCOORD: 'SUBCOORD',
-  COMMETTEE: 'COMMETTEE'
+  COMMITTEE: 'COMMITTEE'
 }
 
 const userSchema = new Schema({
@@ -17,7 +17,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    lowercase: true
+    lowercase: true,
   },
   password: {
     type: String,
@@ -25,11 +25,11 @@ const userSchema = new Schema({
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   phone: {
     type: String,
-    required: true
+    required: true,
   },
   profilePhoto: {
     type: String,
@@ -37,30 +37,29 @@ const userSchema = new Schema({
   },
   college: {
     type: String,
-    required: true
+    required: true,
   },
   sex: {
     type: Number,     //0: default, 1: male, 2: female 3:other
-    required: true
+    required: true,
   },
   roles: {
     type: Array,
-    default: [ USER_ROLES_ENUM.USER ]
+    default: [ USER_ROLES_ENUM.USER ],
   },
   referralId: {
     type: String,
-    default: "CLSTADMN"
+    default: "CLSTADMN",
   },
   celestaId: {
-    type: String
+    type: String,
   },  
   isVerified: {
     type: Boolean,
-    default: false
+    default: false,
   },
 });
 
-//we couldn't use the arrow function because we want to use this.email
 userSchema.pre("save", async function (next) {
   try {
     /*SALTING AND HASHING*/
