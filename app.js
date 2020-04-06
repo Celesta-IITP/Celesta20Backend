@@ -40,7 +40,8 @@ const regRoutes = require('./routes/registration');
 app.use('/api/registrations', regRoutes);
 const galleryRoutes = require('./routes/gallery');
 app.use('/api/gallery', galleryRoutes);
-
+const teamRoutes = require('./routes/teams');
+app.use('/api/team', teamRoutes);
 
 //Catch 404 errors and forward them to error handelers
 app.use((req, res, next) => {
