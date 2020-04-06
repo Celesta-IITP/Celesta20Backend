@@ -1,18 +1,13 @@
-const express=require('express');
-const morgan=require('morgan');
-const bodyParser=require('body-parser');
-const mongoose=require('mongoose');
-const cors=require('cors');
-const path=require('path');
+const express = require('express');
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const {
+    DB_URI
+} = require('./configs/config');
 
-const users=require('./routes/users');
-const events=require('./routes/events');
-const admin=require('./routes/admin');
-
-const {DB_URI}=require('./configs/config');
-
-const app=express();
-
+const app = express();
 let server = require('http').Server(app);
 
 // Connecting to database
@@ -21,7 +16,7 @@ mongoose
         useNewUrlParser: true,
         useCreateIndex: true,
         useFindAndModify: false,
-        useUnifiedTopology: true 
+        useUnifiedTopology: true
     })
     .then(() => console.log('db connected'))
     .catch((err) => console.log(err))
@@ -35,31 +30,35 @@ app.use('/public/profilephotos', express.static(__dirname + '/public/profilephot
 app.use(bodyParser.json());
 
 //Routes
-app.use('/users',users);
-app.use('/events',events);
-app.use('/admin',admin);
+const userRoutes = require('./routes/users');
+app.use('/api/users', userRoutes);
+const eventRoutes = require('./routes/events');
+app.use('/api/events', eventRoutes);
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+const regRoutes = require('./routes/registration');
+app.use('/api/registrations', regRoutes);
+
 
 //Catch 404 errors and forward them to error handelers
-app.use((req,res,next)=>{
-    const err=new Error('Not Found');
-    err.status=404;
+app.use((req, res, next) => {
+    const err = new Error('Not Found');
+    err.status = 404;
     next(err);
 })
 
 //Error handeler function
-app.use((err,req,res,next)=>{
-    const error=err;
-    const status=err.status||500;
+app.use((err, req, res, next) => {
+    const error = err;
+    const status = err.status || 500;
     //respond to clients
-    res.status(status).json({
-        message: error.message
-    });
+    res.status(status).send(error.message);
     //respond to ourselves
-    console.error(err); 
+    console.error(err);
 })
 
 //Start the server
-var port = process.env.PORT || 3000;
-server.listen(port, function() {
-  console.log("App is running on port " + port);
+var port = process.env.PORT || 4500;
+server.listen(port, function () {
+    console.log("App is running on port " + port);
 });

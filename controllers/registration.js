@@ -116,8 +116,10 @@ module.exports = {
     },
 
     getAllRegistrations: async (req, res, next) => {
-        const regs = await Registration.find({});
-        return res.status(200).send(regs)
+        if (currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
+            const regs = await Registration.find({});
+            return res.status(200).send(regs)
+        } else return res.status(403).send("Not authorized to view!")
     },
 
     getRegistrationsByEvent: async (req, res, next) => {
@@ -135,10 +137,12 @@ module.exports = {
     },
 
     getRegistrationById: async (req, res, next) => {
-        const regId = req.params.regId;
-        const reg = await Registration.findById(regId);
-        if (reg) return res.status(200).send(reg);
-        else return res.status(404).send("Registration not found!");
+        if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
+            const regId = req.params.regId;
+            const reg = await Registration.findById(regId);
+            if (reg) return res.status(200).send(reg);
+            else return res.status(404).send("Registration not found!");
+        }
     },
 
     getRegistrationsByUser: async (req, res, next) => {
