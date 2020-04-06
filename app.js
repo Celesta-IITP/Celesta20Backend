@@ -38,7 +38,7 @@ const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 const regRoutes = require('./routes/registration');
 app.use('/api/registrations', regRoutes);
-const galleryRoutes = require('./routes/gallery-routes');
+const galleryRoutes = require('./routes/gallery');
 app.use('/api/gallery', galleryRoutes);
 
 

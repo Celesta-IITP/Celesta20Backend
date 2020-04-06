@@ -1,6 +1,6 @@
 const router=require('express-promise-router')();
 const Controller=require('../controllers/registration');
-const {validateBody, schemas}=require('../helpers/registration-middleware');
+const {validateBody, schemas}=require('../helpers/registrationsRouteHelpers');
 const passport=require('passport');
 const passportConf=require('../passport');
 
