@@ -35,7 +35,7 @@ const eventSchema = new Schema({
         type: String,
     },
     date: {
-        type: String, 
+        type: String,
         required: true
     },
     startTime: {
@@ -64,9 +64,11 @@ const eventSchema = new Schema({
         default: 0
     },
 
-    postLinks : [{
-        type : String
+    postLinks: [{
+        type: String
     }],
+}, {
+    timestamps: true
 });
 
 

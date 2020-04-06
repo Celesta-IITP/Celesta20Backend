@@ -38,6 +38,8 @@ const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);
 const regRoutes = require('./routes/registration');
 app.use('/api/registrations', regRoutes);
+const galleryRoutes = require('./routes/gallery-routes');
+app.use('/api/gallery', galleryRoutes);
 
 
 //Catch 404 errors and forward them to error handelers
