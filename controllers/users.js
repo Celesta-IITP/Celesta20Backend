@@ -87,9 +87,7 @@ module.exports = {
             email: rawUser.email
         })
         if (foundUser) {
-            return res.status(403).send({
-                message: "Email is already registered with us."
-            });
+            return res.status(403).send("Email is already registered with us.");
         }
 
         const newUser = new User(req.value.body);
@@ -105,9 +103,9 @@ module.exports = {
             newUser.celestaId = celestaId;
             await newUser.save();
             await newToken.save();
-            res.status(200).send({user: newUser});
+            res.status(200).send(newUser);
         } else {
-            res.status(500).send({message: "Mail send failed!"})
+            res.status(500).send("Mail send failed!")
         }
 
     },
@@ -134,7 +132,7 @@ module.exports = {
 
             if (foundUser) {
 
-                if (foundUser.isVerified) return res.status(400).send({ message: 'This user has already been verified.' });
+                if (foundUser.isVerified) return res.status(400).send('This user has already been verified.');
 
                 User.findByIdAndUpdate(foundUser._id, {isVerified: true}, {new: true}).then((updatedUser) => {
                     res.status(200).send("The account has been verified. Please log in.");
@@ -145,11 +143,11 @@ module.exports = {
                 // res.status(200).send("The account has been verified. Please log in.");
 
             } else {
-                return res.status(400).send({ message: 'We were unable to find a user for this token.' });
+                return res.status(400).send('We were unable to find a user for this token.');
             }
 
         } else {
-            return res.status(400).send({ message: 'We were unable to find a valid token. Your token my have expired.' });
+            return res.status(400).send('We were unable to find a valid token. Your token my have expired.');
         }
 
     },
@@ -242,21 +240,6 @@ module.exports = {
         }
     },
 
-    // //get all user api (access: auth users)
-    // getAllUsers: async(req,res,next)=>{
-    //     const users=await User.find({})
-    //     if(users){
-    //         res.status(200).json({
-    //             users: users
-    //         })
-    //     } else {
-    //         res.status(404).json({
-    //             message: "No users found"
-    //         })
-    //     }
-    // },
-
-
     //get particular user api (access: auth users)
     getUser: async (req, res, next) => {
         const userId = req.params.userId;
@@ -267,9 +250,7 @@ module.exports = {
         if (user) {
             res.status(200).send(user)
         } else {
-            res.status(404).send({
-                message: "User not found"
-            })
+            res.status(404).send("User not found")
         }
     },
 
@@ -281,14 +262,10 @@ module.exports = {
         })
         if (user) {
             User.findByIdAndUpdate({_id: userId}, {profilePhoto: `${ req.headers.host }/${ req.file.path }`} ,{new:true}).then((updatedUser)=>{
-                res.status(200).json({
-                    updatedUser
-                });
+                res.status(200).send(updatedUser);
             });
         } else {
-            res.status(404).send({
-                message: "User not found"
-            })
+            res.status(404).send("User not found!")
         }
     },
 

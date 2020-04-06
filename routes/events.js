@@ -5,23 +5,29 @@ const passport=require('passport');
 const passportConf=require('../passport');
 
 //localhost:PORT/events
-// router.route('/')
-//     .get(EventsControllers.getAllEvents)
-//     .post(passport.authenticate('jwt',{session: false}), validateBody(schemas.eventSchema), EventsControllers.postEvent)
+router.route('/')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getAllEvents)
+    .post(passport.authenticate('jwt',{session: false}), validateBody(schemas.eventSchema), EventsControllers.postEvent)
 
+router.route('/detailed')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getAllDetailedEvents)
 
-// //localhost:PORT/events/club/:clubId
-// router.route('/club/:clubId')
-//     .get(EventsControllers.getClubEvents)
+router.route('/event/:eventId')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getEventById)
+    .patch(passport.authenticate('jwt',{session: false}), validateBody(schemas.eventSchema), EventsControllers.patchEventWithId)
+    .delete(passport.authenticate('jwt',{session: false}), EventsControllers.deleteEventWithId)
 
-// //localhost:PORT/events/date/:timestmp
-// router.route('/date/:timestamp')
-//     .get(EventsControllers.getEventsByDate)
+router.route('/bytype/:type')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getEventsByType)
 
-// //localhost:PORT/events/:eventId
-// router.route('/:eventId')
-//     .get(EventsControllers.getEventWithEventId)
-//     .delete(passport.authenticate('jwt',{session: false}), EventsControllers.deleteEventWithEventId)
-//     .patch(passport.authenticate('jwt',{session: false}), validateBody(schemas.eventSchema), EventsControllers.patchEventWithEventId)
+router.route('/bytype/:type/detailed')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getDetailedEventsByType)
+
+router.route('/bydate')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getEventsByDate)
+
+router.route('/bydate/detailed')
+    .get(passport.authenticate('jwt',{session: false}), EventsControllers.getDetailedEventsByDate)
+
 
 module.exports=router;

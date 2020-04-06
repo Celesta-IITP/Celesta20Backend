@@ -12,11 +12,13 @@ const regSchema = new Schema({
         ref: 'event',
         required: true
     },
-    orderId: {
-        type: String
-    },
     paymentId: { //or transactionId
         type: String
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'completed', 'refund initiated', 'refunded'],
+        default: 'pending'
     },
     teamName: {
         type: String
@@ -25,7 +27,7 @@ const regSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'user'
     }]
-});
+}, {timestamps: true});
 
 const Registration = mongoose.model("registration", regSchema);
 module.exports = Registration;
