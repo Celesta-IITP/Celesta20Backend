@@ -10,9 +10,9 @@ module.exports = {
     getAllEvents: async (req, res, next) => {
         const events = await Event.find({}, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
@@ -22,18 +22,18 @@ module.exports = {
             eventType: type
         }, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
     getAllDetailedEvents: async (req, res, next) => {
         const events = await Event.find({}, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
@@ -43,9 +43,9 @@ module.exports = {
             eventType: type
         }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
@@ -58,9 +58,9 @@ module.exports = {
         }, 'name description thumbnailUrl venue date startTime endTime eventType teamSize charge');
 
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
@@ -72,9 +72,9 @@ module.exports = {
         }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
 
         if (events) {
-            res.status(200).send(events)
+            res.status(200).json({ data: events })
         } else {
-            res.status(404).send("No events found");
+            res.status(404).json({ message: "No events found" });
         }
     },
 
@@ -85,9 +85,9 @@ module.exports = {
         }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers');
 
         if (event) {
-            res.status(200).send(event);
+            res.status(200).json({ data: event });
         } else {
-            res.status(404).send("Event not found");
+            res.status(404).json({ message: "Event not found" });
         }
     },
 
@@ -104,14 +104,14 @@ module.exports = {
 
             newEvent.save((err, product) => {
                 if (err) {
-                    res.status(500).send("Unable to add event");
+                    res.status(500).json({ message: "Unable to add event" });
                 } else {
-                    res.status(200).send("Event added")
+                    res.status(200).json({ message: "Event added" })
                 }
             });
 
         } else {
-            res.status(403).send("Not authorized to add events");
+            res.status(403).json({ message: "Not authorized to add events" });
         }
     },
 
@@ -129,11 +129,11 @@ module.exports = {
                 Event.findByIdAndRemove({
                     _id: eventId
                 }, (err, doc) => {
-                    if (err) res.status(500).send("Unable to delete event");
-                    else return res.status(200).send("Event deleted.")
+                    if (err) res.status(500).json({ message: "Unable to delete event" });
+                    else return res.status(200).json({ message: "Event deleted." })
                 })
-            } else return res.status(403).send("Not authorized")
-        } else return res.status(404).send("Event not found!")
+            } else return res.status(403).json({ message: "Not authorized" })
+        } else return res.status(404).json({ message: "Event not found!" })
 
     },
 
@@ -150,11 +150,11 @@ module.exports = {
                 Event.findByIdAndUpdate(eventId, req.value.body, {
                     new: true
                 }, (err, doc) => {
-                    if (err) return res.status(500).send("Unable to update event");
-                    else return res.status(200).send("Event updated.")
+                    if (err) return res.status(500).json({ message: "Unable to update event" });
+                    else return res.status(200).json({ message: "Event updated." })
                 })
-            } else return res.status(403).send("Not authorized")
-        } else return res.status(404).send("Event not found!")
+            } else return res.status(403).json({ message: "Not authorized" })
+        } else return res.status(404).json({ message: "Event not found!" })
 
     },
 

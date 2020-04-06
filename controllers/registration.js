@@ -16,20 +16,19 @@ module.exports = {
         }, 'name eventType teamSize charge');
 
         if (event) {
-
             const existReg = await Registration.findOne({
                 userId: currUser._id,
                 eventId: eventId
             })
             if (existReg) {
-                return res.status(409).send("Already registered!");
+                return res.status(409).json({ message: "Already registered!" });
             }
 
             const existReg2 = await Registration.findOne({
                 teamDetails: currUser._id
             })
             if (existReg2) {
-                return res.status(409).send("Already part of a team!");
+                return res.status(409).json({ message: "Already part of a team!" });
             }
 
             if (event.teamSize == 1) {
@@ -41,9 +40,9 @@ module.exports = {
 
                 newReg.save((err, product) => {
                     if (err) {
-                        return res.status(500).send("Registration failed");
+                        return res.status(500).json({ message: "Registration failed" });
                     } else {
-                        res.status(200).send("Registration successful")
+                        res.status(200).json({ message: "Registration successful" });
                     }
                 })
 
@@ -52,40 +51,37 @@ module.exports = {
                     userId: currUser._id,
                     eventId: eventId,
                     paymentStatus: 'pending',
-                    teamName: req.value.teamName,
+                    teamName: req.value.body.teamName,
                     teamDetails: []
                 })
 
-                const teamDetails = req.value.teamDetails;
+                const { teamDetails } = req.value.body;
                 const teamLength = teamDetails.length;
                 if (teamLength > event.teamSize) {
-                    return res.status(436).send(teamLength + ' members not allowed in this event!');
+                    return res.status(436).json({ message: `${ teamLength } members not allowed in this event!` });
                 }
 
                 for (var i = 0; i < teamLength; i++) {
                     const element = teamDetails[i];
-                    await User.findOne({
-                        celestaId: element
-                    }, 'name', (err, doc) => {
-                        if (err) {
-                            return res.status(404).send("One of celesta id is invalid!");
-                        } else {
-                            newReg.teamDetails.push(doc._id)
-                        }
-                    });
+                    const user = await User.findOne({celestaId: element});
+                    if (!user) {
+                        return res.status(404).json({ message: "One of celesta id is invalid!" });
+                    } else {
+                        newReg.teamDetails.push(element);
+                    }
                 }
 
                 newReg.save((err, product) => {
                     if (err) {
-                        return res.status(500).send("Registration failed");
+                        return res.status(500).json({ message: "Registration failed" });
                     } else {
-                        res.status(200).send("Registration successful")
+                        res.status(200).json({ message: "Registration successful" })
                     }
                 })
             }
 
         } else {
-            res.status(404).send("No event found");
+            res.status(404).json({ message: "No event found" });
         }
     },
 
@@ -106,20 +102,20 @@ module.exports = {
             if (existReg) {
                 // existReg.paymentId = String(req.body.paymentId); 
                 // await existReg.save();
-                return res.status(200).send("Payment confirmation successful");
+                return res.status(200).json({ message: "Payment confirmation successful" });
             } else {
-                return res.status(404).send("Not registered in the event as a leader!");
+                return res.status(404).json({ message: "Not registered in the event as a leader!" });
             }
         } else {
-            res.status(404).send("No event found");
+            res.status(404).json({ message: "No event found" });
         }
     },
 
     getAllRegistrations: async (req, res, next) => {
         if (currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
             const regs = await Registration.find({});
-            return res.status(200).send(regs)
-        } else return res.status(403).send("Not authorized to view!")
+            return res.status(200).json({ data: regs })
+        } else return res.status(403).json({ message: "Not authorized to view!" })
     },
 
     getRegistrationsByEvent: async (req, res, next) => {
@@ -131,17 +127,17 @@ module.exports = {
             const regs = await Registration.find({
                 eventId: eventId
             });
-            return res.status(200).send(regs)
+            return res.status(200).json({ data: regs })
 
-        } else return res.status(403).send("Not authorized")
+        } else return res.status(403).json({ message: "Not authorized" })
     },
 
     getRegistrationById: async (req, res, next) => {
         if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
             const regId = req.params.regId;
             const reg = await Registration.findById(regId);
-            if (reg) return res.status(200).send(reg);
-            else return res.status(404).send("Registration not found!");
+            if (reg) return res.status(200).json({ data: reg });
+            else return res.status(404).json({ message: "Registration not found!" });
         }
     },
 
@@ -155,9 +151,9 @@ module.exports = {
                 userId: userId
             });
 
-            return res.status(200).send(regs)
+            return res.status(200).json({ data: regs })
 
-        } else return res.status(403).send("Not authorized")
+        } else return res.status(403).json({ message: "Not authorized" });
     },
 
     getMyRegistrations: async (req, res, next) => {
@@ -166,7 +162,7 @@ module.exports = {
             userId: currUser._id
         });
 
-        return res.status(200).send(regs)
+        return res.status(200).json({ data: regs })
     },
 
 }

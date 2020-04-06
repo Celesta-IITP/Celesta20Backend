@@ -87,7 +87,7 @@ module.exports = {
             email: rawUser.email
         })
         if (foundUser) {
-            return res.status(403).send("Email is already registered with us.");
+            return res.status(403).json({ message: "Email is already registered with us." });
         }
 
         const newUser = new User(req.value.body);
@@ -103,9 +103,9 @@ module.exports = {
             newUser.celestaId = celestaId;
             await newUser.save();
             await newToken.save();
-            res.status(200).send(newUser);
+            res.status(200).json({ data: newUser });
         } else {
-            res.status(500).send("Mail send failed!")
+            res.status(500).json({ message: "Mail send failed!" })
         }
 
     },
@@ -116,46 +116,40 @@ module.exports = {
         const user = req.user;
         const token = signToken(user);
 
-        res.status(200).send({
-            token: token,
-            user: user
+        res.status(200).json({
+            data: {
+                token: token,
+                user: user
+            }
         });
     },
 
     activateUser: async (req, res, next) => {
-        
         const foundToken = await VerificationToken.findById(req.params.token)
 
         if (foundToken) {
-
             const foundUser = await User.findById(foundToken.userId);
 
             if (foundUser) {
 
-                if (foundUser.isVerified) return res.status(400).send('This user has already been verified.');
+                if (foundUser.isVerified) return res.status(400).json({ message: 'This user has already been verified.' });
 
                 User.findByIdAndUpdate(foundUser._id, {isVerified: true}, {new: true}).then((updatedUser) => {
-                    res.status(200).send("The account has been verified. Please log in.");
+                    res.status(200).json({ message: "The account has been verified. Please log in." });
                 });
 
-
-                // await foundUser.save();
-                // res.status(200).send("The account has been verified. Please log in.");
-
             } else {
-                return res.status(400).send('We were unable to find a user for this token.');
+                return res.status(400).json({ message: 'We were unable to find a user for this token.' });
             }
 
         } else {
-            return res.status(400).send('We were unable to find a valid token. Your token my have expired.');
+            return res.status(400).json({ message: 'We were unable to find a valid token. Your token my have expired.' });
         }
 
     },
 
     forgotPwd: async (req, res, next) => {
-        const {
-            email
-        } = req.body;
+        const { email } = req.body;
         const user = await User.findOne({
             email
         });
@@ -173,31 +167,26 @@ module.exports = {
                     code: code
                 });
                 res.status(200).json({
-                    message: "Password reset code is sent to your webmail account"
+                    message: "Password reset code is sent to your email account"
                 })
             } else {
                 res.status(504).json({
-                    message: "Could not send password reset code to your webmail account"
+                    message: "Could not send password reset code to your email account"
                 })
             }
         } else {
             res.status(404).json({
-                "message": "No user found for this webmail"
+                message: "No user found for this email"
             });
         }
     },
 
     resetPwd: async (req, res, next) => {
-        let {
-            email,
-            code,
-            password,
-            confirmPassword
-        } = req.body;
+        let { email, code, password, confirmPassword } = req.body;
 
         if (code == 0) {
             return res.status(407).json({
-                "message": "Invalid reset password code"
+                message: "Invalid reset password code"
             });
         }
 
@@ -207,12 +196,12 @@ module.exports = {
         if (user) {
             if (user.code !== code) {
                 return res.status(401).json({
-                    "message": "Incorrect reset password code"
+                    message: "Incorrect reset password code"
                 });
             }
             if (password !== confirmPassword) {
                 return res.status(403).json({
-                    "message": "Passwords do not match"
+                    message: "Passwords do not match"
                 });
             }
             let pwd = password;
@@ -229,13 +218,13 @@ module.exports = {
                 new: true
             }).then((updatedUser) => {
                 res.status(200).json({
-                    "message": "Password reset successful. You can now login with your new password"
+                    message: "Password reset successful. You can now login with your new password"
                 });
             });
 
         } else {
             res.status(404).json({
-                "message": "No user found for this webmail"
+                message: "No user found for this email"
             });
         }
     },
@@ -248,24 +237,23 @@ module.exports = {
             _id: userId
         })
         if (user) {
-            res.status(200).send(user)
+            res.status(200).json({ data: user })
         } else {
-            res.status(404).send("User not found")
+            res.status(404).json({ message: "User not found" })
         }
     },
 
     uploadUserProfileImage: async (req, res, next) => {
         const userId = req.user.id;
-        console.log(req.file);
         const user = await User.findOne({
             _id: userId
         })
         if (user) {
             User.findByIdAndUpdate({_id: userId}, {profilePhoto: `${ req.headers.host }/${ req.file.path }`} ,{new:true}).then((updatedUser)=>{
-                res.status(200).send(updatedUser);
+                res.status(200).json({ data: updatedUser });
             });
         } else {
-            res.status(404).send("User not found!")
+            res.status(404).json({ message: "User not found!" })
         }
     },
 
