@@ -41,15 +41,14 @@ module.exports = {
         return new Promise((resolve, reject) => {
             request(options, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
-
                     const message_id = JSON.parse(body).message_id;
-    
                     resolve({
                         message: "Notification sent.",
                         message_id: message_id
                     });
                 } else reject({
-                    message: "Notification send failed!"
+                    message: "Notification send failed!",
+                    error: error
                 });
             });
         })
