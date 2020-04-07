@@ -1,9 +1,4 @@
 const Joi = require('joi');
-const {
-    Team,
-    COMMITTEE,
-    POSITION
-} = require('../models/team');
 
 module.exports = {
 
@@ -34,58 +29,5 @@ module.exports = {
             position: Joi.string(),
             committee: Joi.string()
         }).unknown(false),
-    },
-
-    checkIfOrganizer: async (req, res, next) => {
-        const team = await Team.findOne({
-            user: req.user._id,
-            position: POSITION.ORGANIZER
-        })
-        if (team) {
-            req.role = team;
-            return next();
-        } else {
-            return res.status(403).json({
-                message: 'You are not authorized for this action!'
-            });
-        }
-    },
-
-    checkEventAccess: async (req, res, next) => {
-        const team = await Team.findOne({
-            user: req.user._id,
-        })
-        if (team.position == POSITION.ORGANIZER || (team.position == POSITION.COORD && team.committee == COMMITTEE.EVENT) || (team.position == POSITION.SUBCOORD && team.committee == COMMITTEE.EVENT) || team.position == POSITION.OVERALLCOORD) {
-            req.role = team;
-            return next();
-        } else {
-            return res.status(403).json({
-                message: 'You are not authorized for this action!'
-            });
-        }
-    },
-
-    checkGeneralAccess: async (req, res, next) => {
-        const team = await Team.findOne({
-            user: req.user._id,
-        })
-        if ((team.position == POSITION.COORD) || (team.position == POSITION.SUBCOORD) || (team.position == POSITION.OVERALLCOORD)) {
-            req.role = team;
-            return next();
-        } else {
-            return res.status(403).json({
-                message: 'You are not authorized for this action!'
-            });
-        }
-    },
-
-    checkAdminAccess: async (req, res, next) => {
-        if (req.user.isAdmin === true) {
-            return next();
-        } else {
-            return res.status(403).json({
-                message: 'You are not authorized for this action!'
-            });
-        }
     },
 }

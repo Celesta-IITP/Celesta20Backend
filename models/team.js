@@ -30,13 +30,12 @@ const schema = new Schema({
     },
     position: {
         type: String,
-        enum: ['ORG', 'COORD', 'SUBC', 'ADV', 'OVC'],
-        default: POSITION.ORGANIZER
+        enum: ['ORG', 'COORD', 'SUBC', 'ADV', 'OVC']
     },
     committee: {
         type: String,
         enum: ['DEV', 'EVENT', 'SPONS', 'MPR', 'HOSPI', 'REG', 'FLAG', 'WEP', 'CND', 'NONE'],
-        default: COMMITTEE.SPONS
+        default: COMMITTEE.NONE
     }
 });
 
