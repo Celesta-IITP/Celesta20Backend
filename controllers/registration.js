@@ -112,24 +112,19 @@ module.exports = {
     },
 
     getAllRegistrations: async (req, res, next) => {
-        if (currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
             const regs = await Registration.find({});
             return res.status(200).json({ data: regs })
-        } else return res.status(403).json({ message: "Not authorized to view!" })
     },
 
     getRegistrationsByEvent: async (req, res, next) => {
         const eventId = req.params.eventId;
         const currUser = req.user;
 
-        if (currUser.roles.includes(USER_ROLES_ENUM.ORGANIZER) || currUser.roles.includes(USER_ROLES_ENUM.ADMIN) || currUser.roles.includes(USER_ROLES_ENUM.SUBCOORD) || currUser.roles.includes(USER_ROLES_ENUM.COORD)) {
-
             const regs = await Registration.find({
                 eventId: eventId
             });
             return res.status(200).json({ data: regs })
 
-        } else return res.status(403).json({ message: "Not authorized" })
     },
 
     getRegistrationById: async (req, res, next) => {

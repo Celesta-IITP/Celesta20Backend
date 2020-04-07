@@ -1,7 +1,7 @@
 const router=require('express-promise-router')();
 const EventsControllers=require('../controllers/events');
 const {validateBody, schemas}=require('../helpers/eventsRouteHelpers');
-const {checkIfEventsCommittee} = require('../helpers/access-helper')
+const {checkIfEventsCommittee, checkIfAdmin} = require('../helpers/access-helper')
 const passport=require('passport');
 const passportConf=require('../passport');
 
@@ -16,7 +16,7 @@ router.route('/detailed')
 router.route('/event/:eventId')
     .get(passport.authenticate('jwt',{session: false}), EventsControllers.getEventById)
     .patch(passport.authenticate('jwt',{session: false}), checkIfEventsCommittee, validateBody(schemas.eventSchema), EventsControllers.patchEventWithId)
-    .delete(passport.authenticate('jwt',{session: false}), checkIfEventsCommittee, EventsControllers.deleteEventWithId)
+    .delete(passport.authenticate('jwt',{session: false}), checkIfAdmin, EventsControllers.deleteEventWithId)
 
 router.route('/bytype/:type')
     .get(passport.authenticate('jwt',{session: false}), EventsControllers.getEventsByType)

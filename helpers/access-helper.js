@@ -141,6 +141,9 @@ module.exports = {
                 (team.position == POSITION.COORD || team.position == POSITION.SUBCOORD)) {
                 req.role = team;
                 return next();
+            } else if (team.position == POSITION.OVERALLCOORD) {
+                req.role = team;
+                return next();
             }
         }
         return res.status(403).json({

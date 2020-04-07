@@ -3,11 +3,11 @@ const Controller=require('../controllers/registration');
 const {validateBody, schemas}=require('../helpers/registrationsRouteHelpers');
 const passport=require('passport');
 const passportConf=require('../passport');
-const {checkIfAdmin, checkEventAccess} = require('../helpers/access-helper')
+const {checkIfAdmin, checkEventAccess, checkIfEventsCommittee} = require('../helpers/access-helper')
 
 //localhost:PORT/registrations
 router.route('/')
-    .get(passport.authenticate('jwt',{session: false}), Controller.getAllRegistrations)
+    .get(passport.authenticate('jwt',{session: false}), checkIfEventsCommittee, Controller.getAllRegistrations)
 
 router.route('/register/:eventId')
     .post(passport.authenticate('jwt',{session: false}), validateBody(schemas.regSchema), Controller.registerInEvent)
