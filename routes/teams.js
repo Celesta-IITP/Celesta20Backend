@@ -1,13 +1,14 @@
 const router = require('express-promise-router')();
 const Controller = require('../controllers/team');
-const { validateBody, schemas, checkAdminAccess } = require('../helpers/teamRouteHelpers');
+const { validateBody, schemas } = require('../helpers/teamRouteHelpers');
+const {checkIfAdmin} = require('../helpers/access-helper')
 const passport=require('passport');
 const passportConf=require('../passport');
 
 //localhost:PORT/gallery
 router.route('/')
     .get(passport.authenticate('jwt',{session: false}), Controller.getAllMembers)
-    .post(passport.authenticate('jwt',{session: false}), checkAdminAccess, validateBody(schemas.insertSchema), Controller.addMember)
+    .post(passport.authenticate('jwt',{session: false}), checkIfAdmin, validateBody(schemas.insertSchema), Controller.addMember)
 
 router.route('/committee')
     .get(passport.authenticate('jwt',{session: false}), Controller.getCommitteeMembers)   
@@ -29,7 +30,7 @@ router.route('/byuser/:userId')
 	
 router.route('/member/:id')
     .get(passport.authenticate('jwt',{session: false}), Controller.getMemberById)
-    .patch(passport.authenticate('jwt',{session: false}), checkAdminAccess, validateBody(schemas.patchSchema), Controller.updateMemberWithId)
-    .delete(passport.authenticate('jwt',{session: false}), checkAdminAccess, Controller.deleteMemberWithId)
+    .patch(passport.authenticate('jwt',{session: false}), checkIfAdmin, validateBody(schemas.patchSchema), Controller.updateMemberWithId)
+    .delete(passport.authenticate('jwt',{session: false}), checkIfAdmin, Controller.deleteMemberWithId)
 
 module.exports=router;

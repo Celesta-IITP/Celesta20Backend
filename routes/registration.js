@@ -3,6 +3,7 @@ const Controller=require('../controllers/registration');
 const {validateBody, schemas}=require('../helpers/registrationsRouteHelpers');
 const passport=require('passport');
 const passportConf=require('../passport');
+const {checkIfAdmin, checkEventAccess} = require('../helpers/access-helper')
 
 //localhost:PORT/registrations
 router.route('/')
@@ -15,15 +16,15 @@ router.route('/completepayment/:eventId')
     .post(passport.authenticate('jwt',{session: false}), Controller.completePayment)
 
 router.route('/byevent/:eventId')
-    .post(passport.authenticate('jwt',{session: false}), Controller.getRegistrationsByEvent)
+    .post(passport.authenticate('jwt',{session: false}), checkEventAccess, Controller.getRegistrationsByEvent)
 
 router.route('/registration/:regId')
-    .get(passport.authenticate('jwt',{session: false}), Controller.getRegistrationById)
+    .get(passport.authenticate('jwt',{session: false}), checkEventAccess, Controller.getRegistrationById)
 
 router.route('/byuser/:userId')
-    .get(passport.authenticate('jwt',{session: false}), Controller.getRegistrationsByUser)
+    .get(passport.authenticate('jwt',{session: false}), checkEventAccess, Controller.getRegistrationsByUser)
 
-router.route('/myregistrationa')
+router.route('/myregistrations')
     .get(passport.authenticate('jwt',{session: false}), Controller.getMyRegistrations)
 
 module.exports=router;
