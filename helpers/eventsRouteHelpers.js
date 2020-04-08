@@ -29,7 +29,7 @@ module.exports={
             startTime: Joi.string(),
             endTime: Joi.string(),
             teamSize: Joi.number(),
-            eventType: Joi.number(),
+            eventType: Joi.string(),
             rulebookUrl: Joi.string(),
             charge: Joi.number(),
             postLinks: Joi.array()

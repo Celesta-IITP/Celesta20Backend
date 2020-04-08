@@ -49,8 +49,9 @@ const eventSchema = new Schema({
         default: 1
     },
     eventType: {
-        type: Number,
-        default: 0
+        type: String,
+        enum: ['robotics', 'tech', 'management', 'non-tech', 'school', 'ozone', 'workshop', 'guest', 'open'],
+        default: 'open'
     },
 
     rulebookUrl: {
