@@ -27,11 +27,11 @@ module.exports={
             email: Joi.string().email().required(),
             password: Joi.string().required(),
             name: Joi.string().required(),
-            phone:Joi.string(),
-            college: Joi.string().optional(),
-            sex: Joi.number(),
+            phone:Joi.string().required(),
+            college: Joi.string().required(),
+            sex: Joi.number().required(),
             referralId: Joi.string().optional(),
-        }),
+        }).unknown(false),
         userSchemaPatch: Joi.object().keys({
             
         }),
