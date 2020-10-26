@@ -67,6 +67,21 @@ module.exports = {
         }
     },
 
+    getDetailedEventsByType: async (req, res, next) => {
+        const type = req.params.type;
+        const events = await Event.find({
+            eventType: type
+        }, 'name description thumbnailUrl imageUrl venue venueUrl date startTime endTime eventType teamSize charge rulebookUrl registrationUrl postLinks organizers')
+        .then((data) => {
+            res.status(200).json(data);
+        })
+        .catch((error) => {
+            res.status(404).json({
+                message: "No events found"
+            });
+        });
+    },
+
     //get events by date api (access: auth users)
     getEventsByDate: async (req, res, next) => {
         const query = req.params.date;
