@@ -2,16 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const Schema = mongoose.Schema;
 
-// const USER_ROLES_ENUM = {
-//   USER: "USER",
-//   SUPER_ADMIN: "SUPER_ADMIN",
-//   ADMIN: "ADMIN",
-//   ORGANIZER: "ORGANIZER",
-//   COORD: "COORD",
-//   SUBCOORD: "SUBCOORD",
-//   COMMITTEE: "COMMITTEE",
-// };
-
 const caSchema = new Schema(
   {
     email: {
