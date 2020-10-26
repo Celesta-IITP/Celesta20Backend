@@ -50,7 +50,7 @@ const eventSchema = new Schema({
     },
     eventType: {
         type: String,
-        enum: ['robotics', 'tech', 'management', 'non-tech', 'school', 'ozone', 'workshop', 'guest', 'open'],
+        enum: ['robotics', 'technical', 'managerial', 'school', 'online', 'onsite','gamiacs'],
         default: 'open'
     },
 
