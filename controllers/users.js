@@ -101,7 +101,7 @@ module.exports = {
     var newToken = new VerificationToken({
       userId: newUser._id,
     });
-
+    console.log(req.headers.host)
     let mailresponse = await sendMail(
       newUser.email,
       newToken._id,
@@ -271,7 +271,7 @@ module.exports = {
   },
 
   uploadUserProfileImage: async (req, res, next) => {
-    console.log(req.body);
+    //console.log(req.body);
     console.log(req.headers);
     const userId = req.user.id;
     const user = await User.findOne({
