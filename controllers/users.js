@@ -1,6 +1,11 @@
 const { User, USER_ROLES_ENUM } = require("../models/user");
 const VerificationToken = require("../models/verificationtoken");
-const { JWT_SECRET, EMAIL_USER, EMAIL_PASSWORD } = require("../configs/config");
+const {
+  JWT_SECRET,
+  EMAIL_USER,
+  EMAIL_PASSWORD,
+  CLIENT_ID,
+} = require("../configs/config");
 const JWT = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
@@ -22,8 +27,13 @@ sendMail = async (email, token, host) => {
   let transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
+      type: "OAuth2",
       user: EMAIL_USER,
-      pass: EMAIL_PASSWORD,
+      clientId: CLIENT_ID,
+    },
+    tls: {
+      // do not fail on invalid certs
+      rejectUnauthorized: false,
     },
   });
   let mailOptions = {
@@ -101,7 +111,7 @@ module.exports = {
     var newToken = new VerificationToken({
       userId: newUser._id,
     });
-    console.log(req.headers.host)
+    console.log(req.headers.host);
     let mailresponse = await sendMail(
       newUser.email,
       newToken._id,
