@@ -40,7 +40,7 @@ const registerCA = async (req, res) => {
       insertDataOption: "INSERT_ROWS",
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[name, college, phone, email, "0"]],
+        values: [[name, college, phone, email, "0","N"]],
       },
     });
     //console.log(response);
