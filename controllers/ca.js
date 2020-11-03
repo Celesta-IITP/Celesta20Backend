@@ -48,7 +48,7 @@ const registerCA = async (req, res) => {
     res.status(200).json({ ca });
   } catch (e) {
     console.log(e);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: e.message });
   }
 };
 module.exports = {
