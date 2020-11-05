@@ -43,7 +43,6 @@ const userSchema = new Schema(
     },
     sex: {
       type: Number, //0: default, 1: male, 2: female 3:other
-      required: true,
     },
     roles: {
       type: [String],
@@ -63,6 +62,10 @@ const userSchema = new Schema(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+    ca: {
+      type: Number,
+      default: 0,
     },
     code: {
       type: Number,
