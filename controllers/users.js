@@ -94,37 +94,53 @@ generateCelestaId = async () => {
 module.exports = {
   //signup api (access: all)
   signUp: async (req, res, next) => {
-    const rawUser = req.value.body;
-    console.log(rawUser);
-    const foundUser = await User.findOne({
-      email: rawUser.email,
-    });
-    if (foundUser) {
-      return res
-        .status(403)
-        .json({ message: "Email is already registered with us." });
-    }
+    console.log("Inside signup");
+    try {
+      const rawUser = req.value.body;
+      const foundUser = await User.findOne({
+        email: rawUser.email,
+      });
+      console.log(rawUser.referralId);
 
-    const newUser = new User(req.value.body);
+      if (foundUser) {
+        return res
+          .status(403)
+          .json({ message: "Email is already registered with us." });
+      }
+      if (rawUser.referralId !== "CLST0000") {
+        const user = await User.findOne({ celestaId: rawUser.referralId });
+        if (!user) {
+          return res
+            .status(404)
+            .json({ message: "Please give correct referal id" });
+        }
+        user.points += 30;
+        console.log(user);
+        await user.save();
+      }
+      const newUser = new User(req.value.body);
+      // newUser.referralId = rawUser.referralId;
+      var newToken = new VerificationToken({
+        userId: newUser._id,
+      });
+      console.log(req.headers.host);
+      let mailresponse = await sendMail(
+        newUser.email,
+        newToken._id,
+        req.headers.host
+      );
 
-    var newToken = new VerificationToken({
-      userId: newUser._id,
-    });
-    console.log(req.headers.host);
-    let mailresponse = await sendMail(
-      newUser.email,
-      newToken._id,
-      req.headers.host
-    );
-
-    if (mailresponse === true) {
-      const celestaId = await generateCelestaId();
-      newUser.celestaId = celestaId;
-      await newUser.save();
-      await newToken.save();
-      res.status(200).json({ data: newUser });
-    } else {
-      res.status(500).json({ message: "Mail send failed!" });
+      if (mailresponse === true) {
+        const celestaId = await generateCelestaId();
+        newUser.celestaId = celestaId;
+        await newUser.save();
+        await newToken.save();
+        res.status(200).json({ data: newUser });
+      } else {
+        res.status(500).json({ message: "Mail send failed!" });
+      }
+    } catch (e) {
+      console.log(e.message);
     }
   },
 

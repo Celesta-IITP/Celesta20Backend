@@ -29,7 +29,7 @@ module.exports = {
         phone: Joi.string().required(),
         college: Joi.string().required(),
         sex: Joi.number().required(),
-        referralId: Joi.string().optional(),
+        referralId: Joi.string(),
       })
       .unknown(false),
     userSchemaPatch: Joi.object().keys({}),
