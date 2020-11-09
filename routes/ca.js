@@ -1,4 +1,4 @@
 const router = require("express-promise-router")();
-const caController = require("../controllers/ca.js");
-router.route("/register").post(caController.registerCA);
+const userController = require("../controllers/users.js");
+router.route("/register").post(userController.registerCA);
 module.exports = router;
