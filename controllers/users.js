@@ -43,7 +43,7 @@ sendMail = async (email, token, host) => {
       "Hello,\n\n" +
       "Please verify your account by clicking the link: \nhttps://" +
       host +
-      "/users/verify/" +
+      "/api/users/verify/" +
       token +
       "\n",
   };
